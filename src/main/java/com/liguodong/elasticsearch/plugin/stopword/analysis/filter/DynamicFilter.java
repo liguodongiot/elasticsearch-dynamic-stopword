@@ -9,6 +9,7 @@ import org.apache.lucene.analysis.util.CharArraySet;
  */
 public interface DynamicFilter {
 
+    //更新停止词
     void update(CharArraySet charArraySet);
 
 }

@@ -1,5 +1,14 @@
 
-`org.elasticsearch.index.analysis.AnalysisModule`
+
+```
+# 类
+org.elasticsearch.index.analysis.AnalysisModule
+private static class DefaultProcessor extends AnalysisBinderProcessor
+
+# 方法
+public void processTokenFilters(TokenFiltersBindings tokenFiltersBindings)
+```
+
 
 ```
 http://10.16.70.68:9200/
