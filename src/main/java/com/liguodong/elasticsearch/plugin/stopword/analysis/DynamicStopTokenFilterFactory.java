@@ -1,6 +1,7 @@
 package com.liguodong.elasticsearch.plugin.stopword.analysis;
 
 import com.liguodong.elasticsearch.plugin.stopword.analysis.file.LocalStopwordFile;
+import com.liguodong.elasticsearch.plugin.stopword.analysis.file.RemoteStopwordFile;
 import com.liguodong.elasticsearch.plugin.stopword.analysis.file.StopwordFile;
 import com.liguodong.elasticsearch.plugin.stopword.analysis.filter.DynamicFilter;
 import com.liguodong.elasticsearch.plugin.stopword.analysis.filter.DynamicLucene43StopFilter;
@@ -93,16 +94,13 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
 
         StopwordFile stopwordFile;
         if (location.startsWith("http://")) {
-//            stopwordFile = new RemoteSynonymFile(env, analyzer, expand, format,
-//                    location);
-            stopwordFile = new LocalStopwordFile(env, location);
+            stopwordFile = new RemoteStopwordFile(env, location);
         } else {
             stopwordFile = new LocalStopwordFile(env, location);
         }
 
         //停用词
         stopWords = stopwordFile.reloadStopwordSet();
-
         //每一分钟调用一次
         scheduledFuture = pool.scheduleAtFixedRate(new Monitor(stopwordFile), interval, interval, TimeUnit.SECONDS);
     }

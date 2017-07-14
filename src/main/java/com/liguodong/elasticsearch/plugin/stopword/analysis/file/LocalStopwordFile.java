@@ -1,11 +1,12 @@
 package com.liguodong.elasticsearch.plugin.stopword.analysis.file;
 
 import org.apache.lucene.analysis.util.CharArraySet;
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.env.Environment;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +17,6 @@ import java.util.List;
  * datetime: 2017/7/14 10:29
  */
 public class LocalStopwordFile implements StopwordFile {
-
-    private static ESLogger logger = Loggers.getLogger("dynamic-stopword");
 
     private Environment env;
 
@@ -40,13 +39,12 @@ public class LocalStopwordFile implements StopwordFile {
     public CharArraySet reloadStopwordSet() {
         CharArraySet stopwords = null;
         try {
-            logger.info("start reload local stopwords from {}.", location);
-            List<String> list = getReader();
-            logger.info("list: {} .",list.toString());
+            LOGGER.info("start reload local stopwords from {}.", location);
+            List<String> list = readFile();
             CharArraySet stopSet = new CharArraySet(list, false);
             stopwords = CharArraySet.unmodifiableSet(stopSet);
         } catch (Exception e) {
-            logger.error("reload local stopwords {} error!", e, location);
+            LOGGER.error("reload local stopwords {} error!", e, location);
             throw new IllegalArgumentException(
                     "could not reload local stopwords file to build stopwords", e);
         }
@@ -63,36 +61,33 @@ public class LocalStopwordFile implements StopwordFile {
                 return true;
             }
         } catch (Exception e) {
-            logger.error("check need reload local stopword {} error!", e, location);
+            LOGGER.error("check need reload local stopword {} error!", e, location);
         }
         return false;
     }
 
     @Override
-    public List<String> getReader() {
+    public List<String> readFile() {
         BufferedReader br = null;
+        List<String> stopWordList = new ArrayList<>();
         try {
             br = new BufferedReader(new FileReader(stopwordFilePath.toString()));
-            String line = "";
-            List<String> contentString= new ArrayList<>();
+            String line = null;
             while ((line = br.readLine()) != null) {
-                contentString.add(line);
+                stopWordList.add(line);
             }
-            logger.info("list:{}.",contentString.toString());
-            return contentString;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.info("list:{}.",stopWordList.toString());
+        } catch (Exception e) {
+            LOGGER.error("reload local stopword file [{}] error!", e, location);
         } finally {
             try {
                 if (br != null) {
                     br.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("close io error.");
             }
         }
-        return null;
+        return stopWordList;
     }
 }
