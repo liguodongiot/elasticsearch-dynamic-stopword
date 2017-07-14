@@ -1,4 +1,4 @@
-package com.liguodong.elasticsearch.plugin.stopword.analysis;
+package com.liguodong.elasticsearch.plugin.stopword.analysis.filter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -28,9 +28,9 @@ import org.apache.lucene.analysis.util.CharArraySet;
 /**
  * Removes stop words from a token stream.
  */
-public final class DynamicStopwordFilter extends FilteringTokenFilter {
+public final class DynamicStopwordFilter extends FilteringTokenFilter implements DynamicFilter{
 
-    private final CharArraySet stopWords;
+    private CharArraySet stopWords;
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 
     /**
@@ -108,4 +108,8 @@ public final class DynamicStopwordFilter extends FilteringTokenFilter {
         return !stopWords.contains(termAtt.buffer(), 0, termAtt.length());
     }
 
+    @Override
+    public void update(CharArraySet stopWords) {
+        this.stopWords = stopWords;
+    }
 }

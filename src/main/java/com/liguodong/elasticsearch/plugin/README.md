@@ -1,8 +1,5 @@
 
-
-
 `org.elasticsearch.index.analysis.AnalysisModule`
-
 
 ```
 http://10.16.70.68:9200/
@@ -55,7 +52,5 @@ curl -XPUT "http://10.16.70.68:9200/question_answer_info?pretty" -d '
 http://10.16.70.68:9200/question_answer_info/_analyze?text=中华人民共和国&tokenizer=ik_max_word
 
 http://10.16.70.68:9200/question_answer_info/_analyze?text=%E5%A4%A9%E6%B0%94%E5%A5%BD%E7%9A%84%E5%91%80&analyzer=my_ana_stop
-
-
 ```
 

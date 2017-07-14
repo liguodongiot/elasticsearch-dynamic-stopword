@@ -11,7 +11,6 @@ import org.elasticsearch.plugins.Plugin;
  */
 public class DynamicStopwordPlugin extends Plugin{
 
-
     @Override
     public String name() {
         return "analysis-dynamic-stopword";
