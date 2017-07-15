@@ -84,7 +84,7 @@ curl -XPUT "http://10.16.70.68:9200/question_answer_info?pretty" -d '
 }'
 ```
 **说明**
-* `synonyms_path` 是必须要配置的，根据它的值是否是以http://开头来判断是本地文件，还是远程文件。
+* `synonyms_path` 是必须要配置的，根据它的值是否是以 http:// 开头来判断是本地文件，还是远程文件。
 * `interval` 非必须配置的，默认值是60，单位秒，表示间隔多少秒去检查停止词文件是否有更新。
 * `ignore_case` 非必须配置的， 默认值是false。
 
