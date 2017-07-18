@@ -1,0 +1,62 @@
+import com.liguodong.elasticsearch.plugin.stopword.analysis.mapper.DemoMapper;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.junit.Test;
+
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Describe:
+ * author: guodong.li
+ * datetime: 2017/7/18 20:24
+ */
+public class StopWordTest {
+
+    @Test
+    public void test(){
+        //mybatis的配置文件
+        String resource = "conf.xml";
+        //使用类加载器加载mybatis的配置文件（它也加载关联的映射文件）
+        InputStream is = StopWordTest.class.getClassLoader().getResourceAsStream(resource);
+        //构建sqlSession的工厂
+        SqlSessionFactory sessionFactory = new SqlSessionFactoryBuilder().build(is);
+        //使用MyBatis提供的Resources类加载mybatis的配置文件（它也加载关联的映射文件）
+        //Reader reader = Resources.getResourceAsReader(resource);
+        //构建sqlSession的工厂
+        //SqlSessionFactory sessionFactory = new SqlSessionFactoryBuilder().build(reader);
+        //创建能执行映射文件中sql的sqlSession
+        SqlSession session = sessionFactory.openSession();
+        /**
+         * 映射sql的标识字符串，
+         * me.gacl.mapping.userMapper是userMapper.xml文件中mapper标签的namespace属性的值，
+         * getUser是select标签的id属性值，通过select标签的id属性值就可以找到要执行的SQL
+         */
+        String statement = "com.liguodong.elasticsearch.plugin.stopword.analysis.mapper.userMapper.getUser";//映射sql的标识字符串
+        //执行查询返回一个唯一user对象的sql
+        //Map<String,Object> userMap = session.selectMap(statement, 1,"id");
+        List<Map<String,Object>> userMap = session.selectList(statement, 1);
+        System.out.println(userMap.toString());
+
+    }
+
+    @Test
+    public void test2(){
+        String resource = "conf.xml";
+        InputStream is = StopWordTest.class.getClassLoader().getResourceAsStream(resource);
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(is);
+        SqlSession sqlSession = factory.openSession(true);
+
+        //得到UserMapperI接口的实现类对象，UserMapperI接口的实现类对象由sqlSession.getMapper(UserMapperI.class)动态构建出来
+        DemoMapper mapper = sqlSession.getMapper(DemoMapper.class);
+
+        List<Map<String,Object>> userMap = mapper.getUser(1);
+        //使用SqlSession执行完SQL之后需要关闭SqlSession
+        sqlSession.close();
+        System.out.println(userMap.toString());
+
+    }
+
+}
