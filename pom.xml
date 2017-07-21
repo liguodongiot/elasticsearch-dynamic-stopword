@@ -19,12 +19,14 @@
         <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml</elasticsearch.assembly.descriptor>
         <elasticsearch.plugin.classname>com.liguodong.elasticsearch.plugin.DynamicStopwordPlugin</elasticsearch.plugin.classname>
         <elasticsearch.plugin.jvm>true</elasticsearch.plugin.jvm>
+        <commons-lang3.version>3.5</commons-lang3.version>
+        <commons-lang.version>2.6</commons-lang.version>
     </properties>
 
     <developers>
         <developer>
             <name>liguodong</name>
-            <email>liguodong@163.com</email>
+            <email>liguodongiot@163.com</email>
         </developer>
     </developers>
 
@@ -85,6 +87,21 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.1.23</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${commons-lang.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
     </dependencies>
 

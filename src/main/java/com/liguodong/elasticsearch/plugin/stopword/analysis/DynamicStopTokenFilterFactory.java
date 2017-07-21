@@ -1,12 +1,11 @@
 package com.liguodong.elasticsearch.plugin.stopword.analysis;
 
-import com.liguodong.elasticsearch.plugin.stopword.analysis.file.LocalStopwordFile;
-import com.liguodong.elasticsearch.plugin.stopword.analysis.file.RemoteStopwordFile;
-import com.liguodong.elasticsearch.plugin.stopword.analysis.file.StopwordFile;
 import com.liguodong.elasticsearch.plugin.stopword.analysis.filter.DynamicFilter;
 import com.liguodong.elasticsearch.plugin.stopword.analysis.filter.DynamicLucene43StopFilter;
 import com.liguodong.elasticsearch.plugin.stopword.analysis.filter.DynamicStopwordFilter;
 import com.liguodong.elasticsearch.plugin.stopword.analysis.filter.DynamicSuggestStopFilter;
+import com.liguodong.elasticsearch.plugin.stopword.analysis.http.StopwordHttp;
+import com.liguodong.elasticsearch.plugin.stopword.analysis.http.StopwordHttpImpl;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.util.Version;
@@ -31,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
 
-    public static ESLogger logger = Loggers.getLogger("dynamic-stopword");
+    public static ESLogger LOGGER = Loggers.getLogger("dynamic-stopword");
     private ScheduledExecutorService pool;
     private volatile ScheduledFuture<?> scheduledFuture;
 
@@ -63,7 +62,7 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
         //索引名
         this.indexName = index.getName();
         //路径
-        this.location = settings.get("stopwords_path");
+        this.location = settings.get("stopword_url");
         logger.info("indexName is [{}],location is [{}]....", indexName, location);
 
         //时间间隔
@@ -89,20 +88,17 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
 
         if (this.location == null) {
             return;
-            //throw new IllegalArgumentException("dynamic requires `stopword_path` to be configured");
         }
-
-        StopwordFile stopwordFile;
-        if (location.startsWith("http://")) {
-            stopwordFile = new RemoteStopwordFile(env, location);
-        } else {
-            stopwordFile = new LocalStopwordFile(env, location);
+        if (!location.startsWith("http://")) {
+            LOGGER.info("The format is incorrect.you must start with [http://]");
+            return;
         }
-
+        StopwordHttp stopwordHttp = new StopwordHttpImpl(env, location);
         //停用词
-        stopWords = stopwordFile.reloadStopwordSet();
+        stopWords = stopwordHttp.reloadStopwordSet();
+
         //每一分钟调用一次
-        scheduledFuture = pool.scheduleAtFixedRate(new Monitor(stopwordFile), interval, interval, TimeUnit.SECONDS);
+        scheduledFuture = pool.scheduleAtFixedRate(new Monitor(stopwordHttp), interval, interval, TimeUnit.SECONDS);
     }
 
     @Override
@@ -135,19 +131,19 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
     //停止词监控
     public class Monitor implements Runnable {
 
-        private StopwordFile stopwordFile;
+        private StopwordHttp stopwordHttp;
 
-        public Monitor(StopwordFile stopwordFile) {
-            this.stopwordFile = stopwordFile;
+        public Monitor(StopwordHttp stopwordHttp) {
+            this.stopwordHttp = stopwordHttp;
         }
 
         @Override
         public void run() {
-            if (stopwordFile.isNeedReloadStopwordSet()) {
-                stopWords = stopwordFile.reloadStopwordSet();
-                for (DynamicFilter dynamicSynonymFilter : dynamicStopwordFilters.keySet()) {
-                    dynamicSynonymFilter.update(stopWords);
-                    logger.info("{} success reload stopword", indexName);
+            if (stopwordHttp.isNeedReloadStopwordSet()) {
+                stopWords = stopwordHttp.reloadStopwordSet();
+                for (DynamicFilter dynamicFilter : dynamicStopwordFilters.keySet()) {
+                    dynamicFilter.update(stopWords);
+                    LOGGER.info("{} success reload stopword", indexName);
                 }
             }
         }

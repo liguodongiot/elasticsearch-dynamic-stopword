@@ -1,4 +1,4 @@
-package com.liguodong.elasticsearch.plugin.stopword.analysis.file;
+package com.liguodong.elasticsearch.plugin.stopword.analysis.http;
 
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.elasticsearch.common.logging.ESLogger;
@@ -11,7 +11,7 @@ import java.util.List;
  * author: guodong.li
  * datetime: 2017/7/14 10:28
  */
-public interface StopwordFile {
+public interface StopwordHttp {
 
     ESLogger LOGGER = Loggers.getLogger("dynamic-stopword");
 
@@ -20,8 +20,5 @@ public interface StopwordFile {
 
     //判断是否需要重新加载
     boolean isNeedReloadStopwordSet();
-
-    //读取文件
-    List<String> readFile();
 
 }
