@@ -65,7 +65,7 @@ public class StopwordHttpImpl implements StopwordHttp{
 
     @Override
     public boolean isNeedReloadStopwordSet() {
-        //http://localhost:8100/extStopWordDic/updateStopWord?time=1234
+        //http://localhost:8100/extStopWordDic/updateStopWord?lastTimestamp=1234
         String urlNameString = location+"?lastTimestamp="+lastTimestamp;
         HttpResponse response = null;
         HttpGet request = null;

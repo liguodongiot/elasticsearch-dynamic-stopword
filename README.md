@@ -1,6 +1,6 @@
 # dynamic stopword Elasticsearch（动态同义词插件）
 
-动态同义词插件增加了一个token过滤器定时（默认60s）重新加载停止词文件（本地文件或远程文件）。
+动态同义词插件增加了一个token过滤器定时（默认60s）重新加载数据库数据。
 
 ### 安装
 
@@ -9,10 +9,22 @@
 2. copy and unzip `target/releases/elasticsearch-dynamic-stopword-{version}.zip to your-es-root/plugins/dynamic-stopword`
 
 ### 例子
-
-**本地文件**（相对于es的config目录）
+**数据库表** 
 ```
-curl -XPUT "http://10.16.70.68:9200/question_answer_info?pretty" -d '
+CREATE TABLE `stop_word_dic` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+  `stop_word` varchar(255) DEFAULT '' COMMENT '停止词',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除 0：未删除，有效数据  1：删除',
+  PRIMARY KEY (`id`),
+  KEY `idx_stop_word` (`stop_word`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1599 DEFAULT CHARSET=utf8 COMMENT='停止词';
+```
+
+**ES索引库创建**
+```
+curl -XPUT "http://10.16.161.6:9200/question_answer_info?pretty" -d '
 {
     "settings": {
         "number_of_shards": 1,
@@ -21,54 +33,7 @@ curl -XPUT "http://10.16.70.68:9200/question_answer_info?pretty" -d '
            "filter": {
                "my_stop": {
                    "type": "dynamic_stopword",
-                   "stopwords_path": "stop_word.dic"
-               }
-           },
-           "analyzer": {
-               "my_ana_stop": {
-                   "tokenizer": "ik_max_word",
-                   "filter": [
-                       "my_stop"
-                   ]
-               }
-           }
-       }
-    },
-    "mappings": {
-        "correct_answer_info": {
-            "dynamic": "false",
-            "properties": {
-                "id": {
-                    "type": "long"
-                },
-                "ask": {
-                    "type": "string",
-                    "analyzer": "my_ana_stop",
-                    "search_analyzer": "my_ana_stop"
-                },
-                "answer": {
-                    "type": "string",
-                    "analyzer": "my_ana_stop",
-                    "search_analyzer": "my_ana_stop"
-                }
-            }
-        }
-    }
-}'
-```
-
-**远程文件**
-```
-curl -XPUT "http://10.16.70.68:9200/question_answer_info?pretty" -d '
-{
-    "settings": {
-        "number_of_shards": 1,
-        "number_of_replicas": 0,
-       "analysis": {
-           "filter": {
-               "my_stop": {
-                   "type": "dynamic_stopword",
-                   "stopwords_path": "http://localhost:9090/my_dict.dic"
+                   "stopword_url": "http://localhost:8100/extStopWordDic/updateStopWord"
                }
            },
            "analyzer": {
@@ -83,19 +48,14 @@ curl -XPUT "http://10.16.70.68:9200/question_answer_info?pretty" -d '
     }
 }'
 ```
+
 **说明**
-* `synonyms_path` 是必须要配置的，根据它的值是否是以http://开头来判断是本地文件，还是远程文件。
-* `interval` 非必须配置的，默认值是60，单位秒，表示间隔多少秒去检查停止词文件是否有更新。
+* `stopword_url` 是必须要配置的，它的值是以http://开头。
+* `interval` 非必须配置的，默认值是60，单位秒，表示间隔多少秒去检查停止词表是否有更新。
 * `ignore_case` 非必须配置的， 默认值是false。
 
 **测试**
 ```
-http://10.16.70.68:9200/question_answer_info/_analyze?text=太阳出来了&analyzer=my_ana_stop
+http://10.16.161.6:9200/question_answer_info/_analyze?text=太阳出来了&analyzer=my_ana_stop
 ```
 
-
-### 热更新停止词说明
-* 对于本地文件：主要通过文件的修改时间戳(Modify time)来判断是否要重新加载。
-* 对于远程文件：stopwords_path 是指一个url。 这个http请求需要返回两个头部，一个是 Last-Modified，一个是 ETag，只要有一个发生变化，该插件就会去获取新的停止词来更新相应的停止词。
-
->注意： 不管是本地文件，还是远程文件，编码都要求是UTF-8的文本文件
