@@ -22,9 +22,6 @@ import java.util.List;
  */
 public class StopwordHttpImpl implements StopwordHttp{
 
-    //环境
-    private Environment env;
-
     // 远程url地址
     private String location;
 
@@ -37,8 +34,7 @@ public class StopwordHttpImpl implements StopwordHttp{
     // 获取当前客户端对象
     HttpClient httpClient = HttpClientBuilder.create().build();
 
-    public StopwordHttpImpl(Environment env, String location) {
-        this.env = env;
+    public StopwordHttpImpl(String location) {
         this.location = location;
         isNeedReloadStopwordSet();
     }

@@ -33,14 +33,11 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
     public static ESLogger LOGGER = Loggers.getLogger("dynamic-stopword");
     private ScheduledExecutorService pool;
     private volatile ScheduledFuture<?> scheduledFuture;
-
     //停止词
     private CharArraySet stopWords;
-
     private final boolean ignoreCase;
     private final boolean enablePositionIncrements;
     private final boolean removeTrailing;
-
     //索引名
     private final String indexName;
     //路径 必须要配置的，根据它的值是否是以`http://`开头来判断是本地文件，还是远程文件。
@@ -57,6 +54,7 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
                                          Environment env,
                                          @Assisted String name,
                                          @Assisted Settings settings) {
+
         super(index, indexSettingsService.getSettings(), name, settings);
 
         //索引名
@@ -72,7 +70,6 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
         //设置为false,如果他是一个停用词，以便搜索时不忽略最后一个term. 默认为true
         this.removeTrailing = settings.getAsBoolean("remove_trailing", true);
 
-
         //设置停止词
         //this.stopWords = Analysis.parseStopWords(env, settings, StopAnalyzer.ENGLISH_STOP_WORDS_SET, ignoreCase);
 
@@ -80,6 +77,7 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
             throw new IllegalArgumentException("enable_position_increments is not supported anymore as of Lucene 4.4 as it can create broken token streams."
                     + " Please fix your analysis chain or use an older compatibility version (<= 4.3).");
         }
+
         //指定查询结果中的位置增量是否打开，默认true
         this.enablePositionIncrements = settings.getAsBoolean("enable_position_increments", true);
 
@@ -89,14 +87,15 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
         if (this.location == null) {
             return;
         }
+
         if (!location.startsWith("http://")) {
             LOGGER.info("The format is incorrect.you must start with [http://]");
             return;
         }
-        StopwordHttp stopwordHttp = new StopwordHttpImpl(env, location);
+
+        StopwordHttp stopwordHttp = new StopwordHttpImpl(location);
         //停用词
         stopWords = stopwordHttp.reloadStopwordSet();
-
         //每一分钟调用一次
         scheduledFuture = pool.scheduleAtFixedRate(new Monitor(stopwordHttp), interval, interval, TimeUnit.SECONDS);
     }
