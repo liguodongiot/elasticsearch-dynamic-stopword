@@ -89,6 +89,4 @@ public class StopwordHttpImpl implements StopwordHttp{
         }
         return false;
     }
-
-
 }

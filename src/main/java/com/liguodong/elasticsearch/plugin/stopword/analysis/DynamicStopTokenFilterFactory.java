@@ -85,17 +85,20 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
         pool = Executors.newScheduledThreadPool(1);
 
         if (this.location == null) {
+            LOGGER.info("The stopword_url is not null.");
             return;
         }
 
         if (!location.startsWith("http://")) {
-            LOGGER.info("The format is incorrect.you must start with [http://]");
+            LOGGER.info("The stopword_url format is incorrect, you must start with [http://].");
             return;
         }
 
         StopwordHttp stopwordHttp = new StopwordHttpImpl(location);
+        LOGGER.info("The first load stop word start...");
         //停用词
         stopWords = stopwordHttp.reloadStopwordSet();
+        LOGGER.info("The first load stop word end...");
         //每一分钟调用一次
         scheduledFuture = pool.scheduleAtFixedRate(new Monitor(stopwordHttp), interval, interval, TimeUnit.SECONDS);
     }
@@ -135,7 +138,6 @@ public class DynamicStopTokenFilterFactory extends AbstractTokenFilterFactory {
         public Monitor(StopwordHttp stopwordHttp) {
             this.stopwordHttp = stopwordHttp;
         }
-
         @Override
         public void run() {
             if (stopwordHttp.isNeedReloadStopwordSet()) {
