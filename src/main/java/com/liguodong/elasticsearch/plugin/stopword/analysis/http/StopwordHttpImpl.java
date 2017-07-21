@@ -25,7 +25,7 @@ public class StopwordHttpImpl implements StopwordHttp{
     private String location;
 
     //上次更新时间戳
-    private String lastTimestamp;
+    private String lastTimestamp = "";
 
     //结果
     private String result = "";
