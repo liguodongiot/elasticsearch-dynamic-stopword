@@ -4,8 +4,6 @@ import org.apache.lucene.analysis.util.CharArraySet;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 
-import java.util.List;
-
 /**
  * Describe:
  * author: guodong.li
