@@ -57,5 +57,8 @@ curl -XPUT "http://10.16.161.6:9200/question_answer_info?pretty" -d '
 **测试**
 ```
 http://10.16.161.6:9200/question_answer_info/_analyze?text=太阳出来了&analyzer=my_ana_stop
+
+INSERT into stop_word_dic(stop_word,create_time,update_time) VALUES("天气",NOW(),NOW());
+UPDATE top_word_dic SET update_time=NOW(),is_deleted=1 where stop_word='天气';
 ```
 
